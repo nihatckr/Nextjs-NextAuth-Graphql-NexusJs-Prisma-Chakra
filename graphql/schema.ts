@@ -1,12 +1,15 @@
-import { makeSchema } from 'nexus'
+import { fieldAuthorizePlugin, makeSchema } from 'nexus'
 import { join } from 'path'
-import * as types from './types'
+import { applyMiddleware } from 'graphql-middleware'
 
-export const schema = makeSchema({
+import * as types from './types'
+import { permissions } from './permissions'
+
+const baseschema = makeSchema({
     types,
     outputs: {
-        typegen: join(process.cwd(), 'graphql', 'generated/nexus-typegen.ts'), // 2
-        schema: join(process.cwd(), 'graphql', 'generated/schema.graphql'), // 3
+        typegen: join(process.cwd(), 'graphql', 'generated/nexus-typegen.ts'),
+        schema: join(process.cwd(), 'graphql', 'generated/schema.graphql'),
     },
     contextType: {
         export: "Context",
@@ -20,4 +23,10 @@ export const schema = makeSchema({
             },
         ],
     },
+    plugins: [
+
+        fieldAuthorizePlugin(),
+    ]
 })
+
+export const schema = applyMiddleware(baseschema, permissions)
